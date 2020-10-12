@@ -23,11 +23,11 @@ HUM:ind_
 
 ### How
 There is a training set (TRAIN.txt) and a development set (DEV.txt). 
-DEV.txt is devided into:
+The latter is divided into:
 * DEV-questions.txt that only includes the questions.
 * DEV-labels.txt that only includes the labels.
 
-During the development sage, the performance of the models is acessed as follows:
+During the development stage, the performance of the models is acessed as follows:
 1. Predict the labels for the data:
 ```
 python qc.py -coarse TRAIN.txt DEV-questions.txt > predicted-labels.txt # runs the coarse model
