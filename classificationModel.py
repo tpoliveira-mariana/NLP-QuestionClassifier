@@ -71,31 +71,27 @@ def cleanQuestions(questions, stopwords=STOPWORDS):
 
         return result
 
-    def nltk_tag_to_wordnet_tag(nltk_tag):
-        wordnet_tags = {'J': wordnet.ADJ, 'V': wordnet.VERB, 'N': wordnet.NOUN, 'R': wordnet.ADV}
-        if nltk_tag[0] in wordnet_tags:
-            return wordnet_tags[nltk_tag[0]]
-
-        return None
-
+    NTLK_TAG_TO_WORDNET_TAG = {'J': wordnet.ADJ, 'V': wordnet.VERB, 'N': wordnet.NOUN, 'R': wordnet.ADV}
     lemmatizer = WordNetLemmatizer()
-    def handleLemmatization(word):
-        if len(word.split(SEPARATOR)) == 1:     # in case it receives an expressions
-            tagged = nltk.pos_tag([word])
-            tag = nltk_tag_to_wordnet_tag(tagged[0][1])
+    def lemmatize(word_or_expr):
+        if SEPARATOR in word_or_expr:
+            # it's an expression, remove separator (no extra lemmatization required)
+            return word_or_expr.replace(SEPARATOR, '')
+        else:
+            # it's a regular word, lemmatize it if possible
+            tagged = nltk.pos_tag([word_or_expr])
+            tag = NTLK_TAG_TO_WORDNET_TAG.get(tagged[0][1])
             if tag is not None:
-                return lemmatizer.lemmatize(word, tag)
+                return lemmatizer.lemmatize(word_or_expr, tag)
 
-            return word
-
-        return ''.join(word.split(SEPARATOR))    # brave|new|world -> bravenewworld
+            return word_or_expr
 
     def cleanOne(question):
         tokens = word_tokenize(question)
         tokens = chunk_expressions(tokens)
         tokens = map(str.lower, tokens)
         tokens = filter(lambda word: word not in stopwords, tokens)
-        tokens = map(handleLemmatization, tokens)
+        tokens = map(lemmatize, tokens)
         return ' '.join(tokens)
 
     return map(cleanOne, questions)
