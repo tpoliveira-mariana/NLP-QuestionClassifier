@@ -52,26 +52,22 @@ def cleanQuestions(questions, stopwords=STOPWORDS):
     SEPARATOR='|'
 
     # expressions are joined with SEPARATOR
-    def groupExpression(question):
-        result = [question[0]]           # first word is always capital
-        capital = False
+    def chunk_expressions(question_tokens):
+        result = [question_tokens[0]]           # first word is always capital
+
         expression = []
-        for word in question[1:]:
+        for word in question_tokens[1:]:
             if word[0].isupper():
                 expression.append(word)
-                capital = True
             else:
-                capital = False
                 if len(expression) > 0:
-                    grouped = SEPARATOR.join(expression)
-                    result.append(grouped)
+                    result.append(SEPARATOR.join(expression))
+                    expression = []
 
                 result.append(word)
-                expression = []
 
-        if capital:
-            grouped = SEPARATOR.join(expression)
-            result.append(grouped)
+        if len(expression) > 0:
+            result.append(SEPARATOR.join(expression))
 
         return result
 
@@ -94,24 +90,15 @@ def cleanQuestions(questions, stopwords=STOPWORDS):
 
         return ''.join(word.split(SEPARATOR))    # brave|new|world -> bravenewworld
 
-    def lowercaseTokens(tokens):
-        return map(str.lower, tokens)
+    def cleanOne(question):
+        tokens = word_tokenize(question)
+        tokens = chunk_expressions(tokens)
+        tokens = map(str.lower, tokens)
+        tokens = filter(lambda word: word not in stopwords, tokens)
+        tokens = map(handleLemmatization, tokens)
+        return ' '.join(tokens)
 
-
-    questions_tokens = []
-    for question in questions:
-        text_tokens = word_tokenize(question)
-        text_tokens = groupExpression(text_tokens)
-        text_tokens = lowercaseTokens(text_tokens)
-        tokens_without_sw = filter(lambda word: word not in stopwords, text_tokens)
-        clean_tokens = list(map(handleLemmatization, tokens_without_sw))
-        questions_tokens.append(clean_tokens)
-
-    clean_questions = []
-    for question in questions_tokens:
-        clean_questions.append(' '.join(question))
-
-    return clean_questions  
+    return map(cleanOne, questions)
 
 def getCoarseLabels(labels):
     coarse = []
