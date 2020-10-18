@@ -33,22 +33,20 @@ def buildStopWords():
 
 STOPWORDS=buildStopWords()
 
-def getLabelsQuestions(file):
+LABEL_SEP = ':'
+
+def splitLabeledQuestions(labeledQuestionList):
     labels = []
     questions = []
 
-    for line in file:
-        treated = line.split(' ', 1)
-        labels.append(treated[0])
-        questions.append(treated[1][:-1])
+    for labeledQuestion in labeledQuestionList:
+        parts = labeledQuestion.split(' ', 1)
+        labels.append(parts[0])
+        questions.append(parts[1])
 
-    file.close()
     return questions, labels
 
-def getListFromFile(file):
-    return file.readlines()
-
-def cleanQuestions(questions, stopwords=STOPWORDS):
+def preprocessQuestions(questions, stopwords=STOPWORDS):
     SEPARATOR='|'
 
     # expressions are joined with SEPARATOR
@@ -86,7 +84,7 @@ def cleanQuestions(questions, stopwords=STOPWORDS):
 
             return word_or_expr
 
-    def cleanOne(question):
+    def preprocessOne(question):
         words = word_tokenize(question)
         words_or_exprs = chunk_expressions(words)
         words_or_exprs = map(str.lower, words_or_exprs)
@@ -94,96 +92,122 @@ def cleanQuestions(questions, stopwords=STOPWORDS):
         tokens = map(lemmatize, words_or_exprs)
         return ' '.join(tokens)
 
-    return map(cleanOne, questions)
+    return list(map(preprocessOne, questions))
 
-def getCoarseLabels(labels):
-    coarse = []
-    for label in labels:
-        coarse.append(label.split(':')[0])
+def selectCoarseLabels(labels):
+    return list(map(lambda lbl: lbl.split(LABEL_SEP)[0], labels))
 
-    return coarse
+class Classifier():
+    def classify(self, questions):
+        raise NotImplementedError
 
+class SVMClassifier(Classifier):
+    def __init__(self, train_questions, train_labels):
+        Classifier.__init__(self)
 
-# In[2]:
+        self.labels = LabelEncoder()
+        train_labels = self.labels.fit_transform(train_labels)
 
+        self.input_vectorizer = TfidfVectorizer(use_idf=True)
+        train_questions_features = self.input_vectorizer.fit_transform(train_questions)
 
-def preProcessDataSet(is_coarse, trainFile, testQuestionsFile, testLabelsFile):
-    train_f = open(trainFile, 'r')
-    testQ_f = open(testQuestionsFile, 'r')
-    testL_f = open(testLabelsFile, 'r')
-    train_x, train_y = getLabelsQuestions(train_f)
-    test_x = getListFromFile(testQ_f)
-    test_y = getListFromFile(testL_f)
+        self.model = svm.SVC(C=1.0, kernel='linear', degree=3, gamma='auto')
+        self.model.fit(train_questions_features, train_labels)
 
-    train_x = cleanQuestions(train_x)
-    test_x = cleanQuestions(test_x)
+    def classify(self, questions):
+        questions_features = self.input_vectorizer.transform(questions)
+        preds = self.model.predict(questions_features)
+        return self.labels.inverse_transform(preds)
 
-    if is_coarse:
-        train_y = getCoarseLabels(train_y)
-        test_y = getCoarseLabels(test_y)
+class NBClassifier(Classifier):
+    def __init__(self, train_questions, train_labels):
+        Classifier.__init__(self)
 
-    encoder = LabelEncoder()
-    train_y = encoder.fit_transform(train_y)
-    test_y = encoder.fit_transform(test_y)
+        self.labels = LabelEncoder()
+        train_labels = self.labels.fit_transform(train_labels)
 
-    tfidf_vect = TfidfVectorizer(use_idf=True)
-    train_x_tfidf = tfidf_vect.fit_transform(train_x)
-    test_x_tfidf = tfidf_vect.transform(test_x)
+        self.input_vectorizer = TfidfVectorizer(use_idf=True)
+        train_questions_features = self.input_vectorizer.fit_transform(train_questions)
 
-    #print('train_y = ', train_y.shape)
-    #print('test_y = ', test_y.shape)
-    #print('train_x_tfidf = ', train_x_tfidf.shape)
-    #print('test_x_tfidf = ', test_x_tfidf.shape)
-    #print(tfidf_vect.vocabulary_)
+        self.model = naive_bayes.MultinomialNB()
+        self.model.fit(train_questions_features, train_labels)
 
-    return train_x_tfidf, train_y, test_x_tfidf, test_y
+    def classify(self, questions):
+        questions_features = self.input_vectorizer.transform(questions)
+        preds = self.model.predict(questions_features)
+        return self.labels.inverse_transform(preds)
 
-def useSVM(train_x_tfidf, train_y, test_x_tfidf, test_y):
-    # training phase
-    SVM = svm.SVC(C=1.0, kernel='linear', degree=3, gamma='auto')
-    SVM.fit(train_x_tfidf, train_y)
+def unzip(iterable):
+    return list(zip(*iterable))
 
-    # prediction phase
-    predictions_SVM = SVM.predict(test_x_tfidf)
+def selectCoarseCategory(questions, labels, coarse_category):
+    return unzip(
+        filter(
+            lambda t: t[1].split(LABEL_SEP)[0] == coarse_category,
+            zip(questions, labels)
+        )
+    )
 
-    # accuracy
-    print("SVM Accuracy Score -> ", accuracy_score(predictions_SVM, test_y)*100)
+class CompositeClassifier(Classifier):
+    def __init__(self, train_questions, train_labels, InnerClassifier):
+        Classifier.__init__(self)
 
+        self.coarse_model = InnerClassifier(train_questions, selectCoarseLabels(train_labels))
 
-def useNB(train_x_tfidf, train_y, test_x_tfidf, test_y):
-    # training phase
-    Naive = naive_bayes.MultinomialNB()
-    Naive.fit(train_x_tfidf, train_y)
+        self.fine_models = dict()
+        for coarse_category in set(selectCoarseLabels(train_labels)):
+            questions, labels = selectCoarseCategory(train_questions, train_labels, coarse_category)
+            self.fine_models[coarse_category] = InnerClassifier(questions, labels)
 
-    # prediction phase
-    predictions_NB = Naive.predict(test_x_tfidf)
+    def classify_coarse(self, questions):
+        return self.coarse_model.classify(questions)
 
-    # accuracy
-    print("Naive Bayes Accuracy Score -> ", accuracy_score(predictions_NB, test_y)*100)
+    def classify_fine(self, questions, coarse_labels):
+        for (question, coarse_label) in zip(questions, coarse_labels):
+            yield self.fine_models[coarse_label].classify((question,))
 
-def useModels(is_coarse, use_svm, use_nb, train, devQ, devL):
-    train_x_tfidf, train_y, test_x_tfidf, test_y = preProcessDataSet(is_coarse, train, devQ, devL)
-    if use_svm:
-        useSVM(train_x_tfidf, train_y, test_x_tfidf, test_y)
-
-    if use_nb:
-        useNB(train_x_tfidf, train_y, test_x_tfidf, test_y) 
-
-def questionClassification(is_coarse, use_svm=False, use_nb=True, train='TRAIN.txt', devQ='DEV-questions.txt', devL='DEV-labels.txt'):
-    useModels(is_coarse, use_svm, use_nb, train, devQ, devL)
-
-
-
-# In[3]:
-
+    def classify(self, questions):
+        preds_coarse = self.classify_coarse(questions)
+        return list(self.classify_fine(questions, preds_coarse))
 
 #np.random.seed(500)
 
-questionClassification(is_coarse=True, use_svm=True, use_nb=True)
+TRAIN_FILE = 'TRAIN.txt'
+TEST_QUESTIONS_FILE = 'DEV.txt'
+TEST_LABELS_FILE = 'DEV-labels.txt'
 
+def without_newlines(iterable):
+  return map(lambda line: line[:-1], iterable)
 
-# In[ ]:
+with open(TRAIN_FILE, 'r') as train_f, \
+  open(TEST_QUESTIONS_FILE, 'r') as testQ_f, \
+  open(TEST_LABELS_FILE, 'r') as testL_f:
+    train_questions, train_labels = splitLabeledQuestions(without_newlines(train_f))
+    test_questions = list(without_newlines(testQ_f))
+    test_labels = list(without_newlines(testL_f))
 
+train_labels_coarse = selectCoarseLabels(train_labels)
+test_labels_coarse = selectCoarseLabels(test_labels)
+train_questions = preprocessQuestions(train_questions)
+test_questions = preprocessQuestions(test_questions)
+print("Preprocessing complete")
 
+svmCoarsePred = SVMClassifier(train_questions, train_labels_coarse).classify(test_questions)
+print("SVM coarse Accuracy Score -> ", accuracy_score(svmCoarsePred, test_labels_coarse)*100)
 
+nbCoarsePred = NBClassifier(train_questions, train_labels_coarse).classify(test_questions)
+print("Naive Bayes coarse Accuracy Score -> ", accuracy_score(nbCoarsePred, test_labels_coarse)*100)
 
+print()
+
+svmFinePred = SVMClassifier(train_questions, train_labels).classify(test_questions)
+print("SVM fine Accuracy Score -> ", accuracy_score(svmFinePred, test_labels)*100)
+
+nbFinePred = NBClassifier(train_questions, train_labels).classify(test_questions)
+print("Naive Bayes fine Accuracy Score -> ", accuracy_score(nbFinePred, test_labels)*100)
+
+compositeSvmFinePred = CompositeClassifier(train_questions, train_labels, SVMClassifier).classify(test_questions)
+print("Composite SVM fine Accuracy Score -> ", accuracy_score(compositeSvmFinePred, test_labels)*100)
+
+compositeNbFinePred = CompositeClassifier(train_questions, train_labels, NBClassifier).classify(test_questions)
+print("Composite Naive Bayes fine Accuracy Score -> ", accuracy_score(compositeNbFinePred, test_labels)*100)
