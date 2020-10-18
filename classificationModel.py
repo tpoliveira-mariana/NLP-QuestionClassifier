@@ -87,11 +87,11 @@ def cleanQuestions(questions, stopwords=STOPWORDS):
             return word_or_expr
 
     def cleanOne(question):
-        tokens = word_tokenize(question)
-        tokens = chunk_expressions(tokens)
-        tokens = map(str.lower, tokens)
-        tokens = filter(lambda word: word not in stopwords, tokens)
-        tokens = map(lemmatize, tokens)
+        words = word_tokenize(question)
+        words_or_exprs = chunk_expressions(words)
+        words_or_exprs = map(str.lower, words_or_exprs)
+        words_or_exprs = filter(lambda word: word not in stopwords, words_or_exprs)
+        tokens = map(lemmatize, words_or_exprs)
         return ' '.join(tokens)
 
     return map(cleanOne, questions)
