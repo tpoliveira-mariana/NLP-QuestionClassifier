@@ -53,8 +53,10 @@ def getListFromFile(file):
     return result
 
 def cleanQuestions(questions, stopwords=STOPWORDS):
-    # expressions are joined with sym
-    def groupExpression(question, sym):
+    SEPARATOR='|'
+
+    # expressions are joined with SEPARATOR
+    def groupExpression(question):
         result = [question[0]]           # first word is always capital
         capital = False
         expression = []
@@ -64,15 +66,15 @@ def cleanQuestions(questions, stopwords=STOPWORDS):
                 capital = True
             else:
                 capital = False
-                if expression:
-                    grouped = sym.join(expression)
+                if len(expression) > 0:
+                    grouped = SEPARATOR.join(expression)
                     result.append(grouped)
 
                 result.append(word)
                 expression = []
 
         if capital:
-            grouped = sym.join(expression)
+            grouped = SEPARATOR.join(expression)
             result.append(grouped)
 
         return result
@@ -90,8 +92,9 @@ def cleanQuestions(questions, stopwords=STOPWORDS):
 
         return None
 
-    def handleLemmatization(word, sym, lemmatizer):
-        if len(word.split(sym)) == 1:     # in case it receives an expressions
+    lemmatizer = WordNetLemmatizer()
+    def handleLemmatization(word):
+        if len(word.split(SEPARATOR)) == 1:     # in case it receives an expressions
             tagged = nltk.pos_tag([word])
             tag = nltk_tag_to_wordnet_tag(tagged[0][1])
             if tag is not None:
@@ -99,18 +102,16 @@ def cleanQuestions(questions, stopwords=STOPWORDS):
 
             return word
 
-        return ''.join(word.split(sym))    # brave|new|world -> bravenewworld
+        return ''.join(word.split(SEPARATOR))    # brave|new|world -> bravenewworld
 
-    sym = '|'
-    lemmatizer = WordNetLemmatizer()
 
     questions_tokens = []
     for question in questions:
         text_tokens = word_tokenize(question)
-        text_tokens = groupExpression(text_tokens, sym)
+        text_tokens = groupExpression(text_tokens)
         text_tokens = makeTokensLowercase(text_tokens)
         tokens_without_sw = [word for word in text_tokens if not word in stopwords]
-        clean_tokens = [handleLemmatization(word, sym, lemmatizer) for word in tokens_without_sw]
+        clean_tokens = [handleLemmatization(word) for word in tokens_without_sw]
         questions_tokens.append(clean_tokens)
 
     clean_questions = []
