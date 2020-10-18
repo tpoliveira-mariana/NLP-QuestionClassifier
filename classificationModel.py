@@ -30,6 +30,7 @@ def buildStopWords():
 
     return stopwords
 
+STOPWORDS=buildStopWords()
 
 def getLabelsQuestions(file):
     labels = []
@@ -50,7 +51,7 @@ def getListFromFile(file):
 
     return result
 
-def cleanQuestions(questions, stopwords):
+def cleanQuestions(questions, stopwords=STOPWORDS):
     # expressions are joined with sym
     def groupExpression(question, sym):
         result = [question[0]]           # first word is always capital
@@ -136,9 +137,8 @@ def preProcessDataSet(is_coarse, trainFile, testQuestionsFile, testLabelsFile):
     test_x = getListFromFile(testQ_f)
     test_y = getListFromFile(testL_f)
 
-    stopwords = buildStopWords()
-    train_x = cleanQuestions(train_x, stopwords)
-    test_x = cleanQuestions(test_x, stopwords)
+    train_x = cleanQuestions(train_x)
+    test_x = cleanQuestions(test_x)
 
     if is_coarse:
         train_y = getCoarseLabels(train_y)
