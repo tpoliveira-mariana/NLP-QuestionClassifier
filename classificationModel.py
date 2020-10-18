@@ -20,12 +20,13 @@ from sklearn.metrics import accuracy_score
 from sklearn import svm, naive_bayes
 
 def buildStopWords():
-    w_words = ['what', 'when', 'which', 'who', 'where', 'why', 'whom', 'how']
-    extras = [',', '?', '!', ';', '`', '&', 'I', "'s", "``"]
     stopwords = stwds.words('english')
+
+    w_words = ['what', 'when', 'which', 'who', 'where', 'why', 'whom', 'how']
     for word in w_words:
         stopwords.remove(word)
 
+    extras = [',', '?', '!', ';', '`', '&', 'I', "'s", "``"]
     stopwords += extras
 
     return stopwords
