@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
 import nltk
 import numpy as np
 from nltk.corpus import stopwords as stwds
@@ -149,15 +146,18 @@ def selectCoarseCategory(questions, labels, coarse_category):
     )
 
 class CompositeClassifier(Classifier):
-    def __init__(self, train_questions, train_labels, InnerClassifier):
+    def __init__(self, train_questions, train_labels, InnerCoarseClassifier, InnerFineClassifier=None):
         Classifier.__init__(self)
 
-        self.coarse_model = InnerClassifier(train_questions, selectCoarseLabels(train_labels))
+        if InnerFineClassifier is None:
+            InnerFineClassifier = InnerCoarseClassifier
+
+        self.coarse_model = InnerCoarseClassifier(train_questions, selectCoarseLabels(train_labels))
 
         self.fine_models = dict()
         for coarse_category in set(selectCoarseLabels(train_labels)):
             questions, labels = selectCoarseCategory(train_questions, train_labels, coarse_category)
-            self.fine_models[coarse_category] = InnerClassifier(questions, labels)
+            self.fine_models[coarse_category] = InnerFineClassifier(questions, labels)
 
     def classify_coarse(self, questions):
         return self.coarse_model.classify(questions)
@@ -211,3 +211,6 @@ print("Composite SVM fine Accuracy Score -> ", accuracy_score(compositeSvmFinePr
 
 compositeNbFinePred = CompositeClassifier(train_questions, train_labels, NBClassifier).classify(test_questions)
 print("Composite Naive Bayes fine Accuracy Score -> ", accuracy_score(compositeNbFinePred, test_labels)*100)
+
+compositeSvmCoarseNbFinePred = CompositeClassifier(train_questions, train_labels, SVMClassifier, NBClassifier).classify(test_questions)
+print("Composite SVM coarse/NB fine Accuracy Score -> ", accuracy_score(compositeSvmCoarseNbFinePred, test_labels)*100)
