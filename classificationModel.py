@@ -46,11 +46,7 @@ def getLabelsQuestions(file):
     return questions, labels
 
 def getListFromFile(file):
-    result = []
-    for line in file:
-        result.append(line)
-
-    return result
+    return file.readlines()
 
 def cleanQuestions(questions, stopwords=STOPWORDS):
     SEPARATOR='|'
@@ -79,12 +75,6 @@ def cleanQuestions(questions, stopwords=STOPWORDS):
 
         return result
 
-    def makeTokensLowercase(tokens):
-        for i in range(len(tokens)):
-            tokens[i] = tokens[i].lower()
-
-        return tokens
-
     def nltk_tag_to_wordnet_tag(nltk_tag):
         wordnet_tags = {'J': wordnet.ADJ, 'V': wordnet.VERB, 'N': wordnet.NOUN, 'R': wordnet.ADV}
         if nltk_tag[0] in wordnet_tags:
@@ -104,14 +94,17 @@ def cleanQuestions(questions, stopwords=STOPWORDS):
 
         return ''.join(word.split(SEPARATOR))    # brave|new|world -> bravenewworld
 
+    def lowercaseTokens(tokens):
+        return map(str.lower, tokens)
+
 
     questions_tokens = []
     for question in questions:
         text_tokens = word_tokenize(question)
         text_tokens = groupExpression(text_tokens)
-        text_tokens = makeTokensLowercase(text_tokens)
-        tokens_without_sw = [word for word in text_tokens if not word in stopwords]
-        clean_tokens = [handleLemmatization(word) for word in tokens_without_sw]
+        text_tokens = lowercaseTokens(text_tokens)
+        tokens_without_sw = filter(lambda word: word not in stopwords, text_tokens)
+        clean_tokens = list(map(handleLemmatization, tokens_without_sw))
         questions_tokens.append(clean_tokens)
 
     clean_questions = []
