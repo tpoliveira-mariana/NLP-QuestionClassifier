@@ -14,7 +14,7 @@ from nltk.corpus import wordnet
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
-from sklearn import svm, naive_bayes
+from sklearn import svm, naive_bayes, tree
 
 def buildStopWords():
     stopwords = stwds.words('english')
@@ -127,6 +127,24 @@ class NBClassifier(Classifier):
         train_questions_features = self.input_vectorizer.fit_transform(train_questions)
 
         self.model = naive_bayes.MultinomialNB()
+        self.model.fit(train_questions_features, train_labels)
+
+    def classify(self, questions):
+        questions_features = self.input_vectorizer.transform(questions)
+        preds = self.model.predict(questions_features)
+        return self.labels.inverse_transform(preds)
+
+class DecisionTreeClassifier(Classifier):
+    def __init__(self, train_questions, train_labels):
+        Classifier.__init__(self)
+
+        self.labels = LabelEncoder()
+        train_labels = self.labels.fit_transform(train_labels)
+
+        self.input_vectorizer = TfidfVectorizer(use_idf=True)
+        train_questions_features = self.input_vectorizer.fit_transform(train_questions)
+
+        self.model = tree.DecisionTreeClassifier(criterion='gini')
         self.model.fit(train_questions_features, train_labels)
 
     def classify(self, questions):
@@ -266,6 +284,9 @@ assess_model("SVM coarse-only", svmCoarse, test_labels=test_labels_coarse)
 nbCoarse = NBClassifier(train_questions, train_labels_coarse)
 assess_model("Naive Bayes", nbCoarse, test_labels=test_labels_coarse)
 
+treeCoarse = DecisionTreeClassifier(train_questions, train_labels_coarse)
+assess_model("Decision Tree", treeCoarse, test_labels=test_labels_coarse)
+
 print("----------------------------------------------")
 
 svmFine = SVMClassifier(train_questions, train_labels)
@@ -274,6 +295,8 @@ assess_model("SVM", svmFine)
 nbFine = NBClassifier(train_questions, train_labels)
 assess_model("Naive Bayes", nbFine)
 
+treeFine = DecisionTreeClassifier(train_questions, train_labels)
+assess_model("Decision Tree", treeFine)
 
 compositeSvm = CompositeClassifier(train_questions, train_labels, SVMClassifier)
 assess_model("Composite SVM", compositeSvm)
@@ -284,3 +307,5 @@ assess_model("Composite Naive Bayes", compositeNb)
 compositeSvmCoarseNbFine = CompositeClassifier(train_questions, train_labels, SVMClassifier, NBClassifier)
 assess_model("Composite SVM Coarse/Naive Bayes Fine", compositeSvmCoarseNbFine)
 
+compositeSvmCoarseTreeFine = CompositeClassifier(train_questions, train_labels, SVMClassifier, DecisionTreeClassifier)
+assess_model("Composite SVM Coarse/Decision Tree Fine", compositeSvmCoarseTreeFine)
