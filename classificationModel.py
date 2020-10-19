@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+import re
 import nltk
 import numpy as np
 from nltk.corpus import stopwords as stwds
@@ -81,7 +82,20 @@ def preprocessQuestions(questions, stopwords=STOPWORDS):
 
             return word_or_expr
 
+    FEAT_UPPERCASE_2PLETTER_WORD = re.compile('(^| )([A-Z][A-Z]+)( |$)')
+    FEAT_UPPERCASE_3PLETTER_WORD = re.compile('(^| )([A-Z][A-Z][A-Z]+)( |$)')
+    FEAT_DOT_ABBREV_WORD = re.compile('(^| )([A-Za-z]+)\.( |$)')
+    def add_custom_features(question):
+        if FEAT_UPPERCASE_2PLETTER_WORD.search(question):
+            question += " zzz1feat"
+        if FEAT_UPPERCASE_3PLETTER_WORD.search(question):
+            question += " zzz2feat"
+        if FEAT_DOT_ABBREV_WORD.search(question):
+            question += " zzz3feat"
+        return question
+
     def preprocessOne(question):
+        question = add_custom_features(question)
         words = word_tokenize(question)
         words_or_exprs = chunk_expressions(words)
         words_or_exprs = map(str.lower, words_or_exprs)
@@ -226,14 +240,14 @@ def dataset_stats(labels):
 print("Training set stats (coarse)")
 dataset_stats(train_labels_coarse)
 
-print("Training set stats (fine)")
-dataset_stats(train_labels)
+#print("Training set stats (fine)")
+#dataset_stats(train_labels)
 
 print("Test set stats (coarse)")
 dataset_stats(test_labels_coarse)
 
-print("Test set stats (fine)")
-dataset_stats(test_labels)
+#print("Test set stats (fine)")
+#dataset_stats(test_labels)
 
 train_questions = preprocessQuestions(train_questions)
 test_questions = preprocessQuestions(test_questions)
