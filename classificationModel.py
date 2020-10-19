@@ -108,7 +108,7 @@ class SVMClassifier(Classifier):
         self.input_vectorizer = TfidfVectorizer(use_idf=True)
         train_questions_features = self.input_vectorizer.fit_transform(train_questions)
 
-        self.model = svm.SVC(C=1.0, kernel='linear', degree=3, gamma='auto')
+        self.model = svm.SVC(C=1.0, kernel='linear', gamma='auto')
         self.model.fit(train_questions_features, train_labels)
 
     def classify(self, questions):
@@ -145,6 +145,14 @@ def selectCoarseCategory(questions, labels, coarse_category):
         )
     )
 
+def selectCategory(questions, labels, category):
+    return unzip(
+        filter(
+            lambda t: t[1] == category,
+            zip(questions, labels)
+        )
+    )
+
 class CompositeClassifier(Classifier):
     def __init__(self, train_questions, train_labels, InnerCoarseClassifier, InnerFineClassifier=None):
         Classifier.__init__(self)
@@ -170,8 +178,6 @@ class CompositeClassifier(Classifier):
         preds_coarse = self.classify_coarse(questions)
         return list(self.classify_fine(questions, preds_coarse))
 
-#np.random.seed(500)
-
 TRAIN_FILE = 'TRAIN.txt'
 TEST_QUESTIONS_FILE = 'DEV.txt'
 TEST_LABELS_FILE = 'DEV-labels.txt'
@@ -188,29 +194,93 @@ with open(TRAIN_FILE, 'r') as train_f, \
 
 train_labels_coarse = selectCoarseLabels(train_labels)
 test_labels_coarse = selectCoarseLabels(test_labels)
+
+def dataset_stats(labels):
+    coarse_freqs = dict()
+    for lbl in labels:
+        coarse_freqs[lbl] = coarse_freqs.get(lbl, 0) + 1
+
+    for k, v in coarse_freqs.items():
+        coarse_freqs[k] = v / len(labels)
+
+    print(coarse_freqs)
+
+print("Training set stats (coarse)")
+dataset_stats(train_labels_coarse)
+
+print("Training set stats (fine)")
+dataset_stats(train_labels)
+
+print("Test set stats (coarse)")
+dataset_stats(test_labels_coarse)
+
+print("Test set stats (fine)")
+dataset_stats(test_labels)
+
 train_questions = preprocessQuestions(train_questions)
 test_questions = preprocessQuestions(test_questions)
 print("Preprocessing complete")
 
-svmCoarsePred = SVMClassifier(train_questions, train_labels_coarse).classify(test_questions)
-print("SVM coarse Accuracy Score -> ", accuracy_score(svmCoarsePred, test_labels_coarse)*100)
+#test_questions = train_questions
+#test_labels_coarse = train_labels_coarse
+#test_labels = train_labels
+def assess_model(name, model, test_questions=test_questions, test_labels=test_labels):
+    preds = model.classify(test_questions)
 
-nbCoarsePred = NBClassifier(train_questions, train_labels_coarse).classify(test_questions)
-print("Naive Bayes coarse Accuracy Score -> ", accuracy_score(nbCoarsePred, test_labels_coarse)*100)
+    overall_accuracy = accuracy_score(preds, test_labels)*100
 
-print()
+    per_coarse_acc = dict()
+    coarse_weighted_acc = 0.0
+    coarse_cats = set(selectCoarseLabels(test_labels))
+    for coarse_cat in coarse_cats:
+        filtered_preds, labels = selectCoarseCategory(preds, test_labels, coarse_cat)
 
-svmFinePred = SVMClassifier(train_questions, train_labels).classify(test_questions)
-print("SVM fine Accuracy Score -> ", accuracy_score(svmFinePred, test_labels)*100)
+        acc = accuracy_score(filtered_preds, labels)*100
+        per_coarse_acc[coarse_cat] = acc
+        coarse_weighted_acc += acc
+    coarse_weighted_acc /= len(coarse_cats)
 
-nbFinePred = NBClassifier(train_questions, train_labels).classify(test_questions)
-print("Naive Bayes fine Accuracy Score -> ", accuracy_score(nbFinePred, test_labels)*100)
+    per_fine_acc = dict()
+    fine_weighted_acc = 0.0
+    cats = set(test_labels)
+    for cat in cats:
+        filtered_preds, labels = selectCategory(preds, test_labels, cat)
 
-compositeSvmFinePred = CompositeClassifier(train_questions, train_labels, SVMClassifier).classify(test_questions)
-print("Composite SVM fine Accuracy Score -> ", accuracy_score(compositeSvmFinePred, test_labels)*100)
+        acc = accuracy_score(filtered_preds, labels)*100
+        per_fine_acc[cat] = acc
+        fine_weighted_acc += acc
+    fine_weighted_acc /= len(cats)
 
-compositeNbFinePred = CompositeClassifier(train_questions, train_labels, NBClassifier).classify(test_questions)
-print("Composite Naive Bayes fine Accuracy Score -> ", accuracy_score(compositeNbFinePred, test_labels)*100)
+    print("STATS FOR MODEL:", name)
+    print("Overall accuracy (%):", overall_accuracy)
+    print("Coarse category-weighted accuracy (%):", coarse_weighted_acc)
+    print("Fine category-weighted accuracy (%):", fine_weighted_acc)
+    print("Coarse category accuracies (%):", per_coarse_acc)
+    #print("Fine category accuracies (%):", per_fine_acc)
+    print()
 
-compositeSvmCoarseNbFinePred = CompositeClassifier(train_questions, train_labels, SVMClassifier, NBClassifier).classify(test_questions)
-print("Composite SVM coarse/NB fine Accuracy Score -> ", accuracy_score(compositeSvmCoarseNbFinePred, test_labels)*100)
+
+svmCoarse = SVMClassifier(train_questions, train_labels_coarse)
+assess_model("SVM coarse-only", svmCoarse, test_labels=test_labels_coarse)
+
+nbCoarse = NBClassifier(train_questions, train_labels_coarse)
+assess_model("Naive Bayes", nbCoarse, test_labels=test_labels_coarse)
+
+print("----------------------------------------------")
+
+svmFine = SVMClassifier(train_questions, train_labels)
+assess_model("SVM", svmFine)
+
+nbFine = NBClassifier(train_questions, train_labels)
+assess_model("Naive Bayes", nbFine)
+
+
+compositeSvm = CompositeClassifier(train_questions, train_labels, SVMClassifier)
+assess_model("Composite SVM", compositeSvm)
+
+compositeNb = CompositeClassifier(train_questions, train_labels, NBClassifier)
+assess_model("Composite Naive Bayes", compositeNb)
+
+compositeSvmCoarseNbFine = CompositeClassifier(train_questions, train_labels, SVMClassifier, NBClassifier)
+assess_model("Composite SVM Coarse/Naive Bayes Fine", compositeSvmCoarseNbFine)
+
