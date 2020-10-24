@@ -15,7 +15,8 @@ from nltk.corpus import wordnet
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score
-from sklearn import svm, naive_bayes, tree
+from sklearn import naive_bayes, tree
+from sklearn.linear_model import SGDClassifier
 
 def buildStopWords():
     stopwords = stwds.words('english')
@@ -116,7 +117,7 @@ class SVMClassifier(Classifier):
         self.input_vectorizer = TfidfVectorizer(use_idf=True)
         train_questions_features = self.input_vectorizer.fit_transform(train_questions)
 
-        self.model = svm.SVC(C=1.0, kernel='linear', gamma='auto')
+        self.model = SGDClassifier()
         self.model.fit(train_questions_features, train_labels)
 
     def classify(self, questions):
