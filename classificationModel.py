@@ -82,16 +82,10 @@ def preprocessQuestions(questions, stopwords=STOPWORDS):
 
             return word_or_expr
 
-    FEAT_UPPERCASE_2PLETTER_WORD = re.compile('(^| )([A-Z][A-Z]+)( |$)')
-    FEAT_UPPERCASE_3PLETTER_WORD = re.compile('(^| )([A-Z][A-Z][A-Z]+)( |$)')
-    FEAT_DOT_ABBREV_WORD = re.compile('(^| )([A-Za-z]+)\.( |$)')
+    # matches A.B., A.B and ABC
+    FEAT_ACRONYM = re.compile(r'(^| )(([A-Za-z]\.([A-Za-z]\.)+[A-Za-z]?)|([A-Z][A-Z][A-Z]+))( |$)')
     def add_custom_features(question):
-        if FEAT_UPPERCASE_2PLETTER_WORD.search(question):
-            question += " zzz1feat"
-        if FEAT_UPPERCASE_3PLETTER_WORD.search(question):
-            question += " zzz2feat"
-        if FEAT_DOT_ABBREV_WORD.search(question):
-            question += " zzz3feat"
+        question = FEAT_ACRONYM.sub(r'\1zzzacronym\6', question)
         return question
 
     def preprocessOne(question):
