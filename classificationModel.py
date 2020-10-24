@@ -268,7 +268,7 @@ def assess_model(name, model, test_questions=test_questions, test_labels=test_la
         filtered_preds, labels = selectCoarseCategory(preds, test_labels, coarse_cat)
 
         acc = accuracy_score(filtered_preds, labels)*100
-        per_coarse_acc[coarse_cat] = acc
+        per_coarse_acc[coarse_cat] = round(acc, 3)
         coarse_weighted_acc += acc
     coarse_weighted_acc /= len(coarse_cats)
 
@@ -279,47 +279,47 @@ def assess_model(name, model, test_questions=test_questions, test_labels=test_la
         filtered_preds, labels = selectCategory(preds, test_labels, cat)
 
         acc = accuracy_score(filtered_preds, labels)*100
-        per_fine_acc[cat] = acc
+        per_fine_acc[cat] = round(acc, 3)
         fine_weighted_acc += acc
     fine_weighted_acc /= len(cats)
 
     print("STATS FOR MODEL:", name)
-    print("Overall accuracy (%):", overall_accuracy)
-    print("Coarse category-weighted accuracy (%):", coarse_weighted_acc)
-    print("Fine category-weighted accuracy (%):", fine_weighted_acc)
-    print("Coarse category accuracies (%):", per_coarse_acc)
-    #print("Fine category accuracies (%):", per_fine_acc)
+    print("Accuracy (weighted) (%):\t\t", round(fine_weighted_acc,3))
+    print("Accuracy (weighted coarse-cat) (%):\t", round(coarse_weighted_acc,3))
+    print("Accuracy (unweighted) (%):\t\t", round(overall_accuracy,3))
+    print("Accuracy by coarse category (%):", per_coarse_acc)
+    print("Accuracy by category (%):", per_fine_acc)
     print()
 
 
 svmCoarse = SVMClassifier(train_questions, train_labels_coarse)
 assess_model("SVM coarse-only", svmCoarse, test_labels=test_labels_coarse)
 
-nbCoarse = NBClassifier(train_questions, train_labels_coarse)
-assess_model("Naive Bayes", nbCoarse, test_labels=test_labels_coarse)
+#nbCoarse = NBClassifier(train_questions, train_labels_coarse)
+#assess_model("Naive Bayes coarse-only", nbCoarse, test_labels=test_labels_coarse)
 
-treeCoarse = DecisionTreeClassifier(train_questions, train_labels_coarse)
-assess_model("Decision Tree", treeCoarse, test_labels=test_labels_coarse)
+#treeCoarse = DecisionTreeClassifier(train_questions, train_labels_coarse)
+#assess_model("Decision Tree coarse-only", treeCoarse, test_labels=test_labels_coarse)
 
 print("----------------------------------------------")
 
 svmFine = SVMClassifier(train_questions, train_labels)
 assess_model("SVM", svmFine)
 
-nbFine = NBClassifier(train_questions, train_labels)
-assess_model("Naive Bayes", nbFine)
+#nbFine = NBClassifier(train_questions, train_labels)
+#assess_model("Naive Bayes", nbFine)
 
-treeFine = DecisionTreeClassifier(train_questions, train_labels)
-assess_model("Decision Tree", treeFine)
+#treeFine = DecisionTreeClassifier(train_questions, train_labels)
+#assess_model("Decision Tree", treeFine)
 
 compositeSvm = CompositeClassifier(train_questions, train_labels, SVMClassifier)
 assess_model("Composite SVM", compositeSvm)
 
-compositeNb = CompositeClassifier(train_questions, train_labels, NBClassifier)
-assess_model("Composite Naive Bayes", compositeNb)
+#compositeNb = CompositeClassifier(train_questions, train_labels, NBClassifier)
+#assess_model("Composite Naive Bayes", compositeNb)
 
-compositeSvmCoarseNbFine = CompositeClassifier(train_questions, train_labels, SVMClassifier, NBClassifier)
-assess_model("Composite SVM Coarse/Naive Bayes Fine", compositeSvmCoarseNbFine)
+#compositeSvmCoarseNbFine = CompositeClassifier(train_questions, train_labels, SVMClassifier, NBClassifier)
+#assess_model("Composite SVM Coarse/Naive Bayes Fine", compositeSvmCoarseNbFine)
 
-compositeSvmCoarseTreeFine = CompositeClassifier(train_questions, train_labels, SVMClassifier, DecisionTreeClassifier)
-assess_model("Composite SVM Coarse/Decision Tree Fine", compositeSvmCoarseTreeFine)
+#compositeSvmCoarseTreeFine = CompositeClassifier(train_questions, train_labels, SVMClassifier, DecisionTreeClassifier)
+#assess_model("Composite SVM Coarse/Decision Tree Fine", compositeSvmCoarseTreeFine)
