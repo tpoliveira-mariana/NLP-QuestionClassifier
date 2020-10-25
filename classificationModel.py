@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import re
+import contractions
 import nltk
 import numpy as np
 from nltk.corpus import stopwords as stwds
@@ -91,6 +92,7 @@ def preprocessQuestions(questions, stopwords=STOPWORDS):
 
     def preprocessOne(question):
         question = add_custom_features(question)
+        question = contractions.fix(question)
         words = word_tokenize(question)
         words_or_exprs = chunk_expressions(words)
         words_or_exprs = map(str.lower, words_or_exprs)
