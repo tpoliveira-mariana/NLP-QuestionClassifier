@@ -19,19 +19,13 @@ from sklearn.metrics import accuracy_score
 from sklearn import naive_bayes, tree
 from sklearn.linear_model import SGDClassifier
 
-def buildStopWords():
-    stopwords = stwds.words('english')
+STOPWORDS=[
+    # negation
+    'no', 'not',
 
-    w_words = ['what', 'when', 'which', 'who', 'where', 'why', 'whom', 'how']
-    for word in w_words:
-        stopwords.remove(word)
-
-    extras = [',', '?', '!', ';', '`', '&', 'I', "'s", "``"]
-    stopwords += extras
-
-    return stopwords
-
-STOPWORDS=buildStopWords()
+    # punctuation
+    ',', '?', '!', ';', '`', '&', '``'
+]
 
 LABEL_SEP = ':'
 
