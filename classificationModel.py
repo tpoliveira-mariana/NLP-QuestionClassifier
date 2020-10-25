@@ -23,8 +23,11 @@ STOPWORDS=[
     # negation
     'no', 'not',
 
+    # possessive
+    "'s",
+
     # punctuation
-    ',', '?', '!', ';', '`', '&', '``'
+    ',', '?', '!', ';', '`', '&', '``',
 ]
 
 LABEL_SEP = ':'
