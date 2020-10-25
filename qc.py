@@ -19,11 +19,18 @@ STOPWORDS=[
     # negation
     'no', 'not',
 
-    # possessive
-    "'s",
-
     # punctuation
     ',', '?', '!', ';', '`', '&', '``',
+
+    # misc
+    'i', 'we', 'you', 'he', 'she', 'it', 'they',
+    'me', 'him', 'her', 'them',
+    'myself', 'ourselves', 'yourself', 'yourselves', 'himself', 'herself', 'itself', 'themselves',
+    'this', 'that', 'these', 'those',
+
+    'my', 'our', 'ours', 'your', 'yours', 'their', 'theirs', 'his', 'hers', 'its',
+
+    'can', 'should', 'must', 'shall', 'need',
 ]
 
 LABEL_SEP = ':'

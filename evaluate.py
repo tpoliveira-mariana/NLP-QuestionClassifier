@@ -25,7 +25,7 @@ def format_diff(new, old):
         prefix='+'
     elif diff < 0:
         color = RED
-        prefix='-'
+        prefix = ''
 
     return f'{color}({prefix}{round(diff, 3)}){RESET}'
 
