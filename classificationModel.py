@@ -44,13 +44,13 @@ def preprocessQuestions(questions, stopwords=STOPWORDS):
     SEPARATOR='|'
 
     # expressions are joined with SEPARATOR
-    EXPR_MIDDLE_WORDS = ['of', 'the', 'von', 'van', 'with']
+    EXPR_MIDDLE_WORDS = ['the', 'von', 'van']
     def chunk_expressions(question_tokens):
         result = [question_tokens[0]]           # first word is always capital
 
         expression = []
         for word in question_tokens[1:]:
-            if word[0].isupper() or word in EXPR_MIDDLE_WORDS:
+            if word[0].isupper() or (word in EXPR_MIDDLE_WORDS and len(expression) == 0):
                 expression.append(word)
             else:
                 if len(expression) > 0:
