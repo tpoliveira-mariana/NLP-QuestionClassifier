@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+tmp_dir="$(mktemp -d -t MP1-XXXXXXXXXX)"
+trap "{ rm -rf $tmp_dir; }" EXIT
+
+(
+set -e
+
+./qc.py -coarse TRAIN.txt DEV-questions.txt > "$tmp_dir/coarse.txt" &
+./qc.py -fine TRAIN.txt DEV-questions.txt > "$tmp_dir/fine.txt"
+wait
+
+echo
+echo Coarse evaluation
+./evaluate.py DEV-labels-coarse.txt "$tmp_dir/coarse.txt" develop38-coarse.txt
+
+echo
+echo Fine evaluation
+./evaluate.py DEV-labels.txt "$tmp_dir/fine.txt" develop38-fine.txt
+) && (
+	mv "$tmp_dir/coarse.txt" develop38-coarse.txt
+	mv "$tmp_dir/fine.txt" develop38-fine.txt
+	git add develop38-coarse.txt
+	git add develop38-fine.txt
+) || (
+	echo Commit aborted: classification failed or got worse results
+	echo If you really want to commit, update the develop38-{coarse,fine}.txt files manually
+	exit 1
+)
