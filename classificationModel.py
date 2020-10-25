@@ -82,11 +82,23 @@ def preprocessQuestions(questions, stopwords=STOPWORDS):
     FEAT_ACRONYM = re.compile(r'(^| )(([A-Za-z]\.([A-Za-z]\.)+[A-Za-z]?)|([A-Z][A-Z][A-Z]+))( |$)')
     def add_custom_features(question):
         question = FEAT_ACRONYM.sub(r'\1zzzacronym\6', question)
+
+        return question
+
+    NT_CONTRACTION = re.compile(r" n't( |$)")
+    JOIN_CONTRACTIONS = re.compile(r"([A-Za-z])( )+('s|'re|'ll|'t)( |$)")
+    SPLIT_CONTRACTIONS = re.compile(r"([A-Za-z])('s|'t|'re|'ll)( |$)")
+    def expand_contractions(question):
+        question = NT_CONTRACTION.sub(r' not\1', question)
+        question = JOIN_CONTRACTIONS.sub(r'\1\3\4', question)
+        question = contractions.fix(question)
+        # only possessives should remain, keep them splitted for proper lemmatizing and stuff
+        question = SPLIT_CONTRACTIONS.sub(r"\1 \2\3", question)
         return question
 
     def preprocessOne(question):
         question = add_custom_features(question)
-        question = contractions.fix(question)
+        question = expand_contractions(question)
         words = word_tokenize(question)
         words_or_exprs = chunk_expressions(words)
         words_or_exprs = map(str.lower, words_or_exprs)
