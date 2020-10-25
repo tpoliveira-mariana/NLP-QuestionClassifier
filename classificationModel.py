@@ -110,7 +110,7 @@ class SVMClassifier(Classifier):
         self.labels = LabelEncoder()
         train_labels = self.labels.fit_transform(train_labels)
 
-        self.input_vectorizer = TfidfVectorizer(use_idf=True)
+        self.input_vectorizer = TfidfVectorizer(use_idf=True, ngram_range=(1,2))
         train_questions_features = self.input_vectorizer.fit_transform(train_questions)
 
         self.model = SGDClassifier()
@@ -128,7 +128,7 @@ class NBClassifier(Classifier):
         self.labels = LabelEncoder()
         train_labels = self.labels.fit_transform(train_labels)
 
-        self.input_vectorizer = TfidfVectorizer(use_idf=True)
+        self.input_vectorizer = TfidfVectorizer(use_idf=True, ngram_range=(1,2))
         train_questions_features = self.input_vectorizer.fit_transform(train_questions)
 
         self.model = naive_bayes.MultinomialNB()
@@ -146,10 +146,10 @@ class DecisionTreeClassifier(Classifier):
         self.labels = LabelEncoder()
         train_labels = self.labels.fit_transform(train_labels)
 
-        self.input_vectorizer = TfidfVectorizer(use_idf=True)
+        self.input_vectorizer = TfidfVectorizer(use_idf=True, ngram_range=(1,2))
         train_questions_features = self.input_vectorizer.fit_transform(train_questions)
 
-        self.model = tree.DecisionTreeClassifier(criterion='gini')
+        self.model = tree.DecisionTreeClassifier()
         self.model.fit(train_questions_features, train_labels)
 
     def classify(self, questions):
