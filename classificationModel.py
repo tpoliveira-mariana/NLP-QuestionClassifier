@@ -64,6 +64,7 @@ def preprocessQuestions(questions, stopwords=STOPWORDS):
 
         return result
 
+
     NTLK_TAG_TO_WORDNET_TAG = {'J': wordnet.ADJ, 'V': wordnet.VERB, 'N': wordnet.NOUN, 'R': wordnet.ADV}
     lemmatizer = WordNetLemmatizer()
     def lemmatize(word_or_expr):
@@ -126,7 +127,7 @@ class SVMClassifier(Classifier):
         self.input_vectorizer = TfidfVectorizer(use_idf=True, ngram_range=(1,2))
         train_questions_features = self.input_vectorizer.fit_transform(train_questions)
 
-        self.model = SGDClassifier()
+        self.model = SGDClassifier(random_state=7)
         self.model.fit(train_questions_features, train_labels)
 
     def classify(self, questions):
