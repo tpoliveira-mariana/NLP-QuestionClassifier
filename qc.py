@@ -92,23 +92,11 @@ def preprocessQuestions(questions, stopwords=STOPWORDS):
     FEAT_CUSTOM_CHUNK = list(map(lambda w: re.compile(f'(^| )({w[0]})[ ]+({w[1]})( |$)'), [
         ('phone', 'number'),
     ]))
-    FEAT_WORDNET_CATEGORIES = {
-        '15': 'zzzwnlocation',
-        '20': 'zzzwnplant',
-    }
     def add_custom_features(question):
         question = FEAT_ACRONYM.sub(r'\1zzzacronym\6', question)
         question = FEAT_TELEPHONE.sub(r'\1\2\3', question)
         for chunker in FEAT_CUSTOM_CHUNK:
             question = chunker.sub(r'\1\2|\3\4', question)
-
-        tokens = question.split(' ')
-        for tok in tokens:
-            categories = map(lambda s: str(s)[-4:-2], wordnet.synsets(tok))
-            for cat in categories:
-                feat = FEAT_WORDNET_CATEGORIES.get(cat)
-                if feat is not None:
-                    question += f' {feat}'
 
         return question
 

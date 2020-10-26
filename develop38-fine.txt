@@ -1,7 +1,7 @@
 HUM:ind
 NUM:count
 LOC:country
-ENTY:cremat
+ENTY:sport
 ENTY:word
 HUM:ind
 ABBR:exp
@@ -121,7 +121,7 @@ NUM:date
 ENTY:cremat
 ENTY:cremat
 HUM:ind
-HUM:ind
+ENTY:cremat
 DESC:manner
 DESC:def
 LOC:other
@@ -245,7 +245,7 @@ HUM:ind
 HUM:ind
 DESC:def
 DESC:def
-NUM:money
+ENTY:other
 ENTY:word
 DESC:reason
 ABBR:exp
@@ -268,8 +268,8 @@ ABBR:exp
 DESC:def
 HUM:ind
 HUM:desc
-HUM:ind
-ENTY:termeq
+ENTY:veh
+DESC:def
 NUM:count
 HUM:ind
 ABBR:exp
@@ -297,7 +297,7 @@ ENTY:body
 HUM:ind
 DESC:manner
 HUM:ind
-ENTY:substance
+HUM:gr
 ENTY:dismed
 HUM:ind
 DESC:manner
@@ -311,7 +311,7 @@ ENTY:other
 LOC:other
 DESC:def
 ENTY:product
-ENTY:termeq
+DESC:def
 DESC:def
 DESC:def
 HUM:ind
@@ -377,7 +377,7 @@ DESC:manner
 LOC:other
 DESC:def
 HUM:ind
-ENTY:food
+ENTY:cremat
 NUM:date
 LOC:other
 HUM:ind
@@ -535,7 +535,7 @@ HUM:ind
 HUM:ind
 NUM:count
 DESC:manner
-NUM:count
+NUM:other
 LOC:state
 DESC:def
 LOC:other
@@ -638,10 +638,10 @@ LOC:other
 LOC:other
 ENTY:food
 ENTY:cremat
-NUM:other
+DESC:desc
 HUM:ind
 DESC:def
-HUM:ind
+DESC:reason
 DESC:def
 DESC:def
 DESC:def
@@ -679,7 +679,7 @@ HUM:ind
 ENTY:cremat
 DESC:manner
 DESC:desc
-ENTY:termeq
+DESC:def
 DESC:reason
 NUM:money
 HUM:ind
@@ -769,20 +769,20 @@ DESC:manner
 NUM:count
 ENTY:dismed
 DESC:def
-DESC:desc
+HUM:ind
 NUM:money
 HUM:ind
 DESC:reason
 HUM:ind
-ENTY:animal
+LOC:other
 NUM:volsize
 DESC:def
 NUM:date
 LOC:city
 DESC:manner
-HUM:ind
+HUM:desc
 ABBR:exp
-HUM:ind
+ENTY:other
 DESC:manner
 ENTY:event
 LOC:state
@@ -796,9 +796,9 @@ DESC:manner
 DESC:def
 NUM:date
 HUM:ind
-DESC:def
+HUM:ind
 DESC:desc
-ENTY:termeq
+DESC:def
 ENTY:other
 NUM:count
 HUM:ind
@@ -872,7 +872,7 @@ LOC:other
 DESC:desc
 HUM:gr
 DESC:reason
-HUM:ind
+HUM:gr
 ENTY:animal
 ENTY:other
 ENTY:cremat
@@ -888,7 +888,7 @@ DESC:desc
 LOC:other
 LOC:city
 NUM:count
-HUM:gr
+DESC:def
 LOC:country
 NUM:date
 DESC:desc
@@ -947,5 +947,5 @@ DESC:manner
 DESC:reason
 NUM:count
 NUM:date
-HUM:ind
+ENTY:other
 HUM:ind
