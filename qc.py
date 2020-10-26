@@ -87,8 +87,15 @@ def preprocessQuestions(questions, stopwords=STOPWORDS):
 
     # matches A.B., A.B and ABC
     FEAT_ACRONYM = re.compile(r'(^| )(([A-Za-z]\.([A-Za-z]\.)+[A-Za-z]?)|([A-Z][A-Z][A-Z]+))( |$)')
+    FEAT_TELEPHONE = re.compile(r'(^| )tele(phone)( |$)')
+    FEAT_CUSTOM_CHUNK = list(map(lambda w: re.compile(f'(^| )({w[0]})[ ]+({w[1]})( |$)'), [
+        ('phone', 'number'),
+    ]))
     def add_custom_features(question):
         question = FEAT_ACRONYM.sub(r'\1zzzacronym\6', question)
+        question = FEAT_TELEPHONE.sub(r'\1\2\3', question)
+        for chunker in FEAT_CUSTOM_CHUNK:
+            question = chunker.sub(r'\1\2\3\4', question)
 
         return question
 

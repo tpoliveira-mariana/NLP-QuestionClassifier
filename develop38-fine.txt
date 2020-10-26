@@ -2,7 +2,7 @@ HUM:ind
 NUM:count
 LOC:country
 ENTY:cremat
-DESC:desc
+HUM:ind
 HUM:ind
 ABBR:exp
 LOC:city
@@ -63,7 +63,7 @@ ENTY:other
 DESC:manner
 NUM:date
 LOC:other
-LOC:other
+HUM:ind
 ENTY:animal
 HUM:ind
 DESC:reason
@@ -164,7 +164,7 @@ NUM:period
 HUM:ind
 NUM:count
 LOC:other
-DESC:def
+ENTY:termeq
 HUM:ind
 ENTY:substance
 DESC:desc
@@ -210,7 +210,7 @@ DESC:def
 HUM:ind
 DESC:reason
 HUM:ind
-ENTY:dismed
+ENTY:other
 NUM:count
 NUM:date
 ENTY:techmeth
@@ -246,7 +246,7 @@ HUM:ind
 DESC:def
 DESC:desc
 NUM:money
-ENTY:other
+ENTY:food
 DESC:reason
 ABBR:exp
 ENTY:instru
@@ -328,7 +328,7 @@ DESC:desc
 LOC:city
 LOC:other
 NUM:count
-ENTY:other
+HUM:ind
 HUM:ind
 DESC:def
 DESC:manner
@@ -338,7 +338,7 @@ DESC:def
 DESC:def
 HUM:ind
 LOC:other
-DESC:desc
+HUM:ind
 DESC:desc
 HUM:ind
 NUM:count
@@ -348,7 +348,7 @@ LOC:country
 DESC:desc
 HUM:ind
 LOC:country
-NUM:other
+NUM:code
 HUM:ind
 DESC:def
 DESC:desc
@@ -521,7 +521,7 @@ LOC:country
 NUM:count
 HUM:ind
 ENTY:other
-DESC:desc
+HUM:ind
 DESC:def
 DESC:def
 LOC:country
@@ -556,7 +556,7 @@ LOC:other
 NUM:period
 ENTY:animal
 DESC:def
-HUM:gr
+HUM:ind
 DESC:desc
 HUM:ind
 DESC:def
@@ -591,7 +591,7 @@ NUM:count
 LOC:mount
 ENTY:animal
 LOC:other
-ENTY:cremat
+HUM:ind
 DESC:manner
 LOC:other
 NUM:count
@@ -609,10 +609,10 @@ HUM:ind
 LOC:country
 DESC:def
 DESC:def
-LOC:country
+LOC:other
 LOC:other
 NUM:other
-DESC:desc
+LOC:other
 HUM:ind
 NUM:count
 HUM:ind
@@ -674,7 +674,7 @@ ENTY:color
 ENTY:animal
 LOC:other
 LOC:city
-ENTY:other
+ENTY:dismed
 HUM:ind
 ENTY:cremat
 DESC:manner
@@ -887,8 +887,8 @@ ENTY:cremat
 DESC:desc
 LOC:other
 LOC:city
-NUM:count
-DESC:def
+NUM:money
+HUM:gr
 LOC:country
 NUM:date
 DESC:desc
@@ -934,7 +934,7 @@ NUM:date
 DESC:desc
 NUM:count
 HUM:ind
-LOC:other
+NUM:date
 NUM:speed
 ENTY:cremat
 ENTY:lang
