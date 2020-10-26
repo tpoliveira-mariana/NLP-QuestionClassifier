@@ -70,7 +70,6 @@ def preprocessQuestions(questions, stopwords=STOPWORDS):
 
         return result
 
-
     NTLK_TAG_TO_WORDNET_TAG = {'J': wordnet.ADJ, 'V': wordnet.VERB, 'N': wordnet.NOUN, 'R': wordnet.ADV}
     lemmatizer = WordNetLemmatizer()
     def lemmatize(word_or_expr):
