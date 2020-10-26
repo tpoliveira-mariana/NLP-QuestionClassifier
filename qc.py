@@ -100,7 +100,7 @@ def preprocessQuestions(questions, stopwords=STOPWORDS):
         question = FEAT_ACRONYM.sub(r'\1zzzacronym\6', question)
         question = FEAT_TELEPHONE.sub(r'\1\2\3', question)
         for chunker in FEAT_CUSTOM_CHUNK:
-            question = chunker.sub(r'\1\2\3\4', question)
+            question = chunker.sub(r'\1\2|\3\4', question)
 
         tokens = question.split(' ')
         for tok in tokens:
