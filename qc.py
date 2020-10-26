@@ -31,6 +31,7 @@ STOPWORDS=[
     'my', 'our', 'ours', 'your', 'yours', 'their', 'theirs', 'his', 'hers', 'its',
 
     'can', 'should', 'must', 'shall', 'need',
+    'the', 'and',
 ]
 
 LABEL_SEP = ':'
